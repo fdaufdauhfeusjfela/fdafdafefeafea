@@ -33,14 +33,16 @@
 <body>
     <div class="iframe-container">
         <iframe class="video responsive" marginheight="0" marginwidth="0" 
-                src="https://thedaddy.to/embed/stream-822.php" 
-                name="iframe_a" scrolling="no" allowfullscreen="yes"
-                sandbox="allow-same-origin allow-scripts allow-presentation">
+                src="https://thedaddy.to/embed/stream-822.php?muted=0&autoplay=1&volume=1" 
+                name="iframe_a" scrolling="no" allowfullscreen="yes">
             Your Browser Does Not Support Iframe
         </iframe>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            let iframe = document.querySelector("iframe");
+
+            // Prevent iframe redirection attempts
             document.body.addEventListener('click', function (event) {
                 if (event.target.tagName === 'IFRAME') {
                     event.preventDefault();
@@ -48,6 +50,32 @@
                     console.log('Redirect attempt blocked.');
                 }
             }, true);
+
+            // Try to unmute the video inside the iframe
+            iframe.addEventListener("load", () => {
+                try {
+                    let iframeContent = iframe.contentWindow || iframe.contentDocument;
+                    if (iframeContent) {
+                        let videos = iframeContent.document.querySelectorAll("video");
+                        videos.forEach(video => {
+                            video.muted = false;
+                            video.volume = 1.0;
+                        });
+                    }
+                } catch (error) {
+                    console.warn("Cannot access iframe content due to cross-origin restrictions.");
+                }
+            });
+
+            // Block unwanted pop-ups
+            setInterval(() => {
+                document.querySelectorAll('div, iframe').forEach(el => {
+                    if (el.innerText.includes("QR Code") || el.innerHTML.includes("robot")) {
+                        el.remove();
+                        console.log("Blocked pop-up!");
+                    }
+                });
+            }, 500);
         });
     </script>
 </body>
